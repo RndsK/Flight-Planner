@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using FlightPlanner.Core.Services;
 using FlightPlanner.Core.Models;
+using WebApplication1.Models;
+using AutoMapper;
 
 namespace WebApplication1.Controllers
 {
@@ -7,62 +10,79 @@ namespace WebApplication1.Controllers
     [ApiController]
     public class CustomerController : ControllerBase
     {
-        /*
-        private readonly FlightStorage _storage;
+        private readonly IFlightService _flightService;
+        private IMapper _mapper;
 
-        public CustomerController(FlightStorage storage)
+        public CustomerController(IFlightService flightService, IMapper mapper)
         {
-            _storage = storage;
+            _flightService = flightService;
+            _mapper = mapper;
         }
 
         [HttpGet]
         [Route("airports")]
         public IActionResult SearchAirport(string search)
         {
-            var searchedAirport = _storage.SearchAirport(search);
-
-            return Ok(new[] { searchedAirport });
-        }
-
-        [HttpPost]
-        [Route("flights/search")]
-        public IActionResult SearchFlight([FromBody] SearchFlightsRequest? search)
-        {
-            try
+            if (string.IsNullOrWhiteSpace(search))
             {
-                var flights = _storage.SearchFlights(search);
-
-                if (flights.Count == 0)
-                {
-                    return Ok(new PageResult<Flight>(0, 0, new List<Flight>()));
-                }
-
-                return Ok(new PageResult<Flight>(0, flights.Count, flights));
-
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
+                return BadRequest();
             }
 
+            search = search.Trim().ToLower();
+
+            var airports = _flightService.SearchAirports(search);
+
+            var response = airports.Select(airport => new AirportResponse
+            {
+                Country = airport.Country,
+                City = airport.City,
+                Airport = airport.AirportCode
+            }).ToList();
+
+            return Ok(response);
         }
 
         [HttpGet]
         [Route("flights/{id}")]
         public IActionResult FindFlightById(int id)
         {
-            try
-            {
-                var flight = _storage.FindFlightById(id);
+            var flight = _flightService.GetFullFlightById(id);
 
-                return Ok(flight);
-            }
-            catch(InvalidOperationException ex)
+            if (flight == null)
             {
                 return NotFound();
             }
+
+            var response = _mapper.Map<FlightResponse>(flight);
+
+            return Ok(response);
         }
- */
+
+        
+        [HttpPost]
+        [Route("flights/search")]
+        public IActionResult SearchFlight(SearchFlightsRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.From) || string.IsNullOrWhiteSpace(request.To) || string.IsNullOrWhiteSpace(request.DepartureDate))
+            {
+                return BadRequest();
+            }
+            if (request.From.Trim().ToLower() == request.To.Trim().ToLower())
+            {
+                return BadRequest();
+            }
+            var flights = _flightService.SearchFlights(request.From, request.To, request.DepartureDate);
+            var pageResult = new PageResult<Flight>
+            {
+                Page = 0,
+                TotalItems = flights.Count,
+                Items = flights
+            };
+
+            return Ok(pageResult);
+
+        }
+         
     }
        
 }

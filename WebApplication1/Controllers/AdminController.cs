@@ -1,31 +1,41 @@
-﻿using Azure.Core;
+﻿using AutoMapper;
 using FlightPlanner.Core.Models;
 using FlightPlanner.Core.Services;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApplication1.Models;
+using IValidator = WebApplication1.Validations.IValidator;
 
 namespace WebApplication1.Controllers
 {
     [Route("admin-api")]
     [ApiController]
     [Authorize]
-    public class AdminController(IEntityService<Flight> flightService) : ControllerBase
+    public class AdminController(
+        IFlightService flightService,
+        IEnumerable<IValidator> validators,
+        IValidator<Flight> validator,
+        IMapper mapper) : ControllerBase
     {
-        private readonly IEntityService<Flight> _flightService = flightService;
-       
+        private readonly IFlightService _flightService = flightService;
+        private readonly IEnumerable<IValidator> _validators = validators;
+        private readonly IValidator<Flight> _validator = validator;
+        private IMapper _mapper = mapper;
+
+        private static readonly object _lock = new();
 
         [Route("flights/{id}")]
         [HttpGet]
         public IActionResult GetFlight(int id)
         {
-            var result = _flightService.GetById(id);
+            var result = _flightService.GetFullFlightById(id);
             if (result == null)
             {
                 return NotFound();
             }
 
-            var response = GetFromFlight(result);
+            var response = _mapper.Map<FlightResponse>(result);
             return Ok(response);
         }
 
@@ -33,80 +43,57 @@ namespace WebApplication1.Controllers
         [Route("flights")]
         public IActionResult AddFlight(FlightRequest request)
         {
-            try
+            lock (_lock)
             {
-                var flight = GetFromRequest(request);
-                var result = _flightService.Create(flight);
-                var response = GetFromFlight(flight);
-                response.Id = result.Entity.Id;
-                return Created("", response);
+                try
+                {
+                    var flight = _mapper.Map<Flight>(request);
+                    var validationResult = _validator.Validate(flight);
+
+                    if (!validationResult.IsValid)
+                    {
+                        return BadRequest();
+                    }
+
+                    if (_flightService.CheckForDuplicates(flight))
+                    {
+                        return Conflict();
+                    }
+
+                    var result = _flightService.Create(flight);
+                    var response = _mapper.Map<FlightResponse>(flight);
+                    response.Id = result.Entity.Id;
+
+                    return Created("", response);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return Conflict();
+                }
+                catch (ArgumentException)
+                {
+                    return BadRequest();
+                }
             }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict();
-            }
-            catch (ArgumentException)
-            {
-                return BadRequest();
-            }
-            
         }
 
-        /*
+        
         [HttpDelete]
         [Route("flights/{id}")]
         public IActionResult DeleteFlight(int id)
         {
-            _storage.DeleteFlight(id);
-
-            return Ok();
-        }
-        */
-
-        private Flight GetFromRequest(FlightRequest request)
-        {
-            return new Flight
+            lock (_lock)
             {
-                ArrivalTime = request.ArrivalTime,
-                Carrier = request.Carrier,
-                DepartureTime = request.DepartureTime,
-                From = new Airport
-                {
-                    AirportCode = request.From.Airport,
-                    City = request.From.City,
-                    Country = request.From.Country,
-                },
-                To = new Airport
-                {
-                    AirportCode = request.To.Airport,
-                    City = request.To.City,
-                    Country = request.To.Country,
-                }
-            };
+                var flight = _flightService.GetFullFlightById(id);
 
-        }
-
-        private FlightResponse GetFromFlight(Flight flight)
-        {
-            return new FlightResponse()
-            {
-                Id = flight.Id,
-                ArrivalTime = flight.ArrivalTime,
-                Carrier = flight.Carrier,
-                DepartureTime = flight.DepartureTime,
-                From = new AirportResponse()
+                if (flight != null)
                 {
-                    Airport = flight.From.AirportCode,
-                    City = flight.From.City,
-                    Country = flight.From.Country,
-                },
-                To = new AirportResponse()
-                {
-                    Airport = flight.To.AirportCode,
-                    City = flight.To.City,
-                    Country = flight.To.Country,
+                    _flightService.Delete(flight);
                 }
-            };
+
+                return Ok();
+            }
         }
+        
     }
 }
