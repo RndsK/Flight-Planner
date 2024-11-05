@@ -4,6 +4,7 @@ using FlightPlanner.Services.Features.Airports;
 using FlightPlanner.Services.Features.Airports.Models;
 using FlightPlanner.Services.Features.Flights.Models;
 using FlightPlanner.Services.Features.Flights.UseCases.Add;
+using WebApplication1.Controllers;
 
 namespace WebApplication1.Mappings
 {

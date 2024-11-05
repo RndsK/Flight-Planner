@@ -42,7 +42,7 @@ namespace FlightPlanner.Services.Features.Flights.UseCases.Add
             _ = _flightService.Create(flight);
             return Task.FromResult(new Result
             {
-                Status = ResultStatus.Success,
+                Status = ResultStatus.Created,
                 Response = _mapper.Map<FlightViewModel>(flight)
             });
 

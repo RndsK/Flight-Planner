@@ -24,7 +24,15 @@ namespace FlightPlanner.Services.Features.Flights.UseCases.Add
 
             RuleFor(flight => flight.To).NotEmpty();
             RuleFor(flight => flight.From).NotEmpty();
+            RuleFor(flight => flight.From.Airport).NotEmpty();
+            RuleFor(flight => flight.From.Airport).Must((flight, airport) => airport.ToLower().Trim() != flight.To.Airport.ToLower().Trim()).
+                When(flight => !string.IsNullOrEmpty(flight.From?.Airport) && !string.IsNullOrEmpty(flight.To?.Airport));
 
+            RuleFor(flight => flight.From.City).NotEmpty();
+            RuleFor(flight => flight.From.Country).NotEmpty();
+            RuleFor(flight => flight.To.Airport).NotEmpty();
+            RuleFor(flight => flight.To.City).NotEmpty();
+            RuleFor(flight => flight.To.Country).NotEmpty();
 
             /*RuleFor(flight => flight.From.AirportCode).NotEmpty();
             RuleFor(flight => flight.To.AirportCode).NotEmpty();

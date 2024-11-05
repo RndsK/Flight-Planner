@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using FlightPlanner.Core.Services;
 using FlightPlanner.Core.Models;
-using WebApplication1.Models;
 using AutoMapper;
 
 namespace WebApplication1.Controllers
