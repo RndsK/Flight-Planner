@@ -7,8 +7,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Handlers;
-using WebApplication1.Validations;
-using IValidator = WebApplication1.Validations.IValidator;
 
 
 namespace WebApplication1
@@ -35,14 +33,14 @@ namespace WebApplication1
             builder.Services.AddScoped<IDbService, DbService>();
             builder.Services.AddScoped<IDbClearingService, DbClearingService>();
             builder.Services.AddScoped(typeof(IEntityService<>), typeof(EntityService<>));
-            builder.Services.AddScoped<IFlightService, FlightService>();
-            builder.Services.AddScoped<IValidator, CarrierValidator>();
-            builder.Services.AddScoped<IValidator, FlightDatesValidator>();
 
             var executingAssembly = Assembly.GetExecutingAssembly();
-            builder.Services.AddValidatorsFromAssembly(executingAssembly);
 
             builder.Services.AddAutoMapper(executingAssembly);
+
+            builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(executingAssembly));
+
+            builder.Services.AddServices();
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
 using FlightPlanner.Core.Models;
-using WebApplication1.Models;
+using FlightPlanner.Services.Features.Airports;
+using FlightPlanner.Services.Features.Airports.Models;
+using FlightPlanner.Services.Features.Flights.Models;
+using FlightPlanner.Services.Features.Flights.UseCases.Add;
 
 namespace WebApplication1.Mappings
 {
@@ -8,15 +11,21 @@ namespace WebApplication1.Mappings
     {
         public MappingProfile()
         {
-            CreateMap<FlightRequest, Flight>();
+            CreateMap<FlightRequest, AddFlightCommand>();
 
-            CreateMap<AirportRequest, Airport>()
+            CreateMap<AirportRequest, AddAirportCommand>()
+                .ForMember(airport => airport.Airport,
+                    options => 
+                        options.MapFrom(request=> request.Airport));
+
+            CreateMap<AddFlightCommand, Flight>();
+            CreateMap<AddAirportCommand, Airport>()
                 .ForMember(airport => airport.AirportCode,
-                    options => options.MapFrom(request=> request.Airport))
-                .ForMember(airport=> airport.Id, options => options.Ignore());
+                    options =>
+                        options.MapFrom(command => command.Airport));
 
-            CreateMap<Flight, FlightResponse>();
-            CreateMap<Airport, AirportResponse>().ForMember(response => response.Airport,
+            CreateMap<Flight, FlightViewModel>();
+            CreateMap<Airport, AirportViewModel>().ForMember(response => response.Airport,
                 options => options.MapFrom(airport => airport.AirportCode));
         }
     }

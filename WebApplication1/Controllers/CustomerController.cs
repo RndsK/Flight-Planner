@@ -23,7 +23,7 @@ namespace WebApplication1.Controllers
         [Route("airports")]
         public IActionResult SearchAirport(string search)
         {
-            if (string.IsNullOrWhiteSpace(search))
+            /*if (string.IsNullOrWhiteSpace(search))
             {
                 return BadRequest();
             }
@@ -39,14 +39,16 @@ namespace WebApplication1.Controllers
                 Airport = airport.AirportCode
             }).ToList();
 
-            return Ok(response);
+            return Ok(response);*/
+
+            throw new NotImplementedException();
         }
 
         [HttpGet]
         [Route("flights/{id}")]
         public IActionResult FindFlightById(int id)
         {
-            var flight = _flightService.GetFullFlightById(id);
+            /*var flight = _flightService.GetFullFlightById(id);
 
             if (flight == null)
             {
@@ -55,7 +57,8 @@ namespace WebApplication1.Controllers
 
             var response = _mapper.Map<FlightResponse>(flight);
 
-            return Ok(response);
+            return Ok(response);*/
+            throw new NotImplementedException();
         }
 
         

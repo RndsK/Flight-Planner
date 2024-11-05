@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
 using FlightPlanner.Core.Models;
 using FlightPlanner.Core.Services;
+using FlightPlanner.Services.Features.Flights.UseCases.Add;
+using FlightPlanner.Services.Features.Flights.UseCases.Get;
 using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebApplication1.Extensions;
 using WebApplication1.Models;
-using IValidator = WebApplication1.Validations.IValidator;
 
 namespace WebApplication1.Controllers
 {
@@ -13,37 +16,40 @@ namespace WebApplication1.Controllers
     [ApiController]
     [Authorize]
     public class AdminController(
-        IFlightService flightService,
-        IEnumerable<IValidator> validators,
-        IValidator<Flight> validator,
-        IMapper mapper) : ControllerBase
+        IMapper mapper,
+        IMediator mediator) : ControllerBase
     {
-        private readonly IFlightService _flightService = flightService;
-        private readonly IEnumerable<IValidator> _validators = validators;
-        private readonly IValidator<Flight> _validator = validator;
-        private IMapper _mapper = mapper;
+        private readonly IMapper _mapper = mapper;
+        private readonly IMediator _mediator = mediator;
 
         private static readonly object _lock = new();
 
         [Route("flights/{id}")]
         [HttpGet]
-        public IActionResult GetFlight(int id)
+        public  async Task<IActionResult> GetFlight(int id)
         {
-            var result = _flightService.GetFullFlightById(id);
-            if (result == null)
+            return this.ToActionResult(await _mediator.Send(new GetFlightCommand
             {
-                return NotFound();
-            }
-
-            var response = _mapper.Map<FlightResponse>(result);
-            return Ok(response);
+                Id = id
+            }));
         }
 
         [HttpPost]
         [Route("flights")]
-        public IActionResult AddFlight(FlightRequest request)
+        public async Task<IActionResult> AddFlight(FlightRequest request)
         {
-            lock (_lock)
+            return this.ToActionResult(await _mediator.Send(
+                _mapper.Map<AddFlightCommand>(request)));
+
+
+
+
+
+
+
+
+
+            /*lock (_lock)
             {
                 try
                 {
@@ -74,7 +80,7 @@ namespace WebApplication1.Controllers
                 {
                     return BadRequest();
                 }
-            }
+            }*/
         }
 
         
@@ -82,7 +88,7 @@ namespace WebApplication1.Controllers
         [Route("flights/{id}")]
         public IActionResult DeleteFlight(int id)
         {
-            lock (_lock)
+            /*lock (_lock)
             {
                 var flight = _flightService.GetFullFlightById(id);
 
@@ -90,9 +96,11 @@ namespace WebApplication1.Controllers
                 {
                     _flightService.Delete(flight);
                 }
+            }
+             */
 
                 return Ok();
-            }
+            
         }
         
     }

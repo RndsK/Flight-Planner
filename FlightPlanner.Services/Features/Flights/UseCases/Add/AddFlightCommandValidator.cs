@@ -1,11 +1,15 @@
-﻿using FlightPlanner.Core.Models;
-using FluentValidation;
+﻿using FluentValidation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace WebApplication1.Validations
+namespace FlightPlanner.Services.Features.Flights.UseCases.Add
 {
-    public class FlightValidator : AbstractValidator<Flight>
+    public class AddFlightCommandValidator : AbstractValidator<AddFlightCommand>
     {
-        public FlightValidator()
+        public AddFlightCommandValidator() 
         {
             RuleFor(flight => flight.ArrivalTime).NotEmpty();
             RuleFor(flight => flight.DepartureTime).NotEmpty();
@@ -20,16 +24,16 @@ namespace WebApplication1.Validations
 
             RuleFor(flight => flight.To).NotEmpty();
             RuleFor(flight => flight.From).NotEmpty();
-            RuleFor(flight => flight.From.AirportCode).NotEmpty();
+
+
+            /*RuleFor(flight => flight.From.AirportCode).NotEmpty();
             RuleFor(flight => flight.To.AirportCode).NotEmpty();
 
             RuleFor(flight => flight)
                 .Must(flight =>
                     !string.Equals(flight.From.AirportCode?.Trim(),
                         flight.To.AirportCode?.Trim(),
-                        StringComparison.OrdinalIgnoreCase));
-
-
+                        StringComparison.OrdinalIgnoreCase));*/
         }
     }
 }
