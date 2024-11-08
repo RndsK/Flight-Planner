@@ -11,12 +11,14 @@ namespace WebApplication1.Controllers
     public class CustomerController : ControllerBase
     {
         private readonly IFlightService _flightService;
-        private IMapper _mapper;
+        private readonly IMapper _mapper;
+        private readonly IAirportService _airportService;
 
-        public CustomerController(IFlightService flightService, IMapper mapper)
+        public CustomerController(IFlightService flightService, IMapper mapper, IAirportService airportService)
         {
             _flightService = flightService;
             _mapper = mapper;
+            _airportService = airportService;
         }
 
         [HttpGet]
@@ -30,7 +32,7 @@ namespace WebApplication1.Controllers
 
             search = search.Trim().ToLower();
 
-            var airports = _flightService.SearchAirports(search);
+            var airports = _airportService.SearchAirports(search);
 
             var response = airports.Select(airport => new AirportResponse
             {

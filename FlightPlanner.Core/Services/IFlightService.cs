@@ -8,8 +8,6 @@ namespace FlightPlanner.Core.Services
 
         bool CheckForDuplicates(Flight flight);
 
-        List<Airport> SearchAirports(string search);
-
         public List<Flight> SearchFlights(string from, string to, string departureDate);
     }
 }

@@ -4,8 +4,8 @@ using FlightPlanner.Core.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using WebApplication1.Models;
-using IValidator = WebApplication1.Validations.IValidator;
 
 namespace WebApplication1.Controllers
 {
@@ -14,15 +14,12 @@ namespace WebApplication1.Controllers
     [Authorize]
     public class AdminController(
         IFlightService flightService,
-        IEnumerable<IValidator> validators,
         IValidator<Flight> validator,
         IMapper mapper) : ControllerBase
     {
         private readonly IFlightService _flightService = flightService;
-        private readonly IEnumerable<IValidator> _validators = validators;
         private readonly IValidator<Flight> _validator = validator;
         private IMapper _mapper = mapper;
-
         private static readonly object _lock = new();
 
         [Route("flights/{id}")]
@@ -65,10 +62,6 @@ namespace WebApplication1.Controllers
                     response.Id = result.Entity.Id;
 
                     return Created("", response);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    return Conflict();
                 }
                 catch (ArgumentException)
                 {

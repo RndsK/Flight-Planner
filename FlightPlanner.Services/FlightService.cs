@@ -30,19 +30,6 @@ namespace FlightPlanner.Services
                 existingFlight.ArrivalTime == flight.ArrivalTime);
         }
 
-        public List<Airport> SearchAirports(string search)
-        {
-            search = search.Trim().ToLower();
-
-            var airports = _context.Airports
-                .Where(a => a.Country.ToLower().Contains(search) ||
-                            a.City.ToLower().Contains(search) ||
-                            a.AirportCode.ToLower().Contains(search)).ToList();
-                
-
-            return airports;
-        }
-
         public List<Flight> SearchFlights(string from, string to, string departureDate)
         {
             return _context.Flights

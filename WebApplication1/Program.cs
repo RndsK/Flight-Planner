@@ -38,6 +38,7 @@ namespace WebApplication1
             builder.Services.AddScoped<IFlightService, FlightService>();
             builder.Services.AddScoped<IValidator, CarrierValidator>();
             builder.Services.AddScoped<IValidator, FlightDatesValidator>();
+            builder.Services.AddScoped<IAirportService, AirportService>();
 
             var executingAssembly = Assembly.GetExecutingAssembly();
             builder.Services.AddValidatorsFromAssembly(executingAssembly);
