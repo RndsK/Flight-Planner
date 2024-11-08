@@ -8,14 +8,13 @@ namespace WebApplication1.Controllers
     [ApiController]
     public class TestingController(IDbClearingService dbClearingService) : ControllerBase
     {
-        private readonly IDbClearingService _dbClearingService = dbClearingService;
 
         [HttpPost]
         [Route("clear")]
         public IActionResult Clear()
         {
-            _dbClearingService.Clear<Airport>();
-            _dbClearingService.Clear<Flight>();
+            dbClearingService.Clear<Airport>();
+            dbClearingService.Clear<Flight>();
 
             return Ok();
         }
