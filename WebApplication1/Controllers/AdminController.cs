@@ -52,7 +52,7 @@ namespace WebApplication1.Controllers
                         return BadRequest();
                     }
 
-                    if (_flightService.CheckForDuplicates(flight))
+                    if (_flightService.Exists(flight))
                     {
                         return Conflict();
                     }

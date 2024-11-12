@@ -20,7 +20,7 @@ namespace FlightPlanner.Services
                 .SingleOrDefault(flight => flight.Id == id);
         }
 
-        public bool CheckForDuplicates(Flight flight)
+        public bool Exists(Flight flight)
         {
             return _context.Flights.Any(existingFlight =>
                 existingFlight.From.AirportCode == flight.From.AirportCode &&

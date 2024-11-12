@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using FlightPlanner.Core.Services;
-using FlightPlanner.Core.Models;
 using WebApplication1.Models;
 using AutoMapper;
+using FluentValidation;
 
 namespace WebApplication1.Controllers
 {
@@ -13,12 +13,14 @@ namespace WebApplication1.Controllers
         private readonly IFlightService _flightService;
         private readonly IMapper _mapper;
         private readonly IAirportService _airportService;
+        private readonly IValidator<SearchFlightsRequest> _validator;
 
-        public CustomerController(IFlightService flightService, IMapper mapper, IAirportService airportService)
+        public CustomerController(IFlightService flightService, IMapper mapper, IAirportService airportService, IValidator<SearchFlightsRequest> validator)
         {
             _flightService = flightService;
             _mapper = mapper;
             _airportService = airportService;
+            _validator = validator;
         }
 
         [HttpGet]
@@ -34,12 +36,7 @@ namespace WebApplication1.Controllers
 
             var airports = _airportService.SearchAirports(search);
 
-            var response = airports.Select(airport => new AirportResponse
-            {
-                Country = airport.Country,
-                City = airport.City,
-                Airport = airport.AirportCode
-            }).ToList();
+            var response = airports.Select(airport => _mapper.Map<AirportResponse>(airport)).ToList();
 
             return Ok(response);
         }
@@ -65,24 +62,18 @@ namespace WebApplication1.Controllers
         [Route("flights/search")]
         public IActionResult SearchFlight(SearchFlightsRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.From) || string.IsNullOrWhiteSpace(request.To) || string.IsNullOrWhiteSpace(request.DepartureDate))
+            var validationResult = _validator.Validate(request);
+
+            if (!validationResult.IsValid)
             {
                 return BadRequest();
             }
-            if (request.From.Trim().ToLower() == request.To.Trim().ToLower())
-            {
-                return BadRequest();
-            }
+
             var flights = _flightService.SearchFlights(request.From, request.To, request.DepartureDate);
-            var pageResult = new PageResult<Flight>
-            {
-                Page = 0,
-                TotalItems = flights.Count,
-                Items = flights
-            };
 
-            return Ok(pageResult);
+            var response = _mapper.Map<PageResult<FlightResponse>>(flights);
 
+            return Ok(response);
         }
          
     }

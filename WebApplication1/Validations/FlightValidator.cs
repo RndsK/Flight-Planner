@@ -29,7 +29,6 @@ namespace WebApplication1.Validations
                         flight.To.AirportCode?.Trim(),
                         StringComparison.OrdinalIgnoreCase));
 
-
         }
     }
 }

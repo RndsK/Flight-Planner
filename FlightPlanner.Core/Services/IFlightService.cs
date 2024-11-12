@@ -6,7 +6,7 @@ namespace FlightPlanner.Core.Services
     {
         Flight? GetFullFlightById(int id);
 
-        bool CheckForDuplicates(Flight flight);
+        bool Exists(Flight flight);
 
         public List<Flight> SearchFlights(string from, string to, string departureDate);
     }
